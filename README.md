@@ -33,3 +33,7 @@ Nothing, but you can:
 * Remove or add columns to CSV datalog on *log_col_names*
 * Define GPS log rate time on *LOG_RATE* (milliseconds)
 * Define GPS TX/RX pins on *ARDUINO_GPS_RX* and *ARDUINO_GPS_TX*
+
+## Working examples
+I did a small walking trip around my neighborhood, and put the collected data on a [Google MyMaps](https://www.google.com/maps/d/u/0/viewer?mid=1M18iTRElKQexUaB8HIwEB5qV68c&ll=-34.595372511704866%2C-58.416522499999985&z=18). Note that MyMaps has a limitation of 2000 entries of each CSV (or XML) file. I will try using Open street maps.
+![](https://i.imgur.com/PK7mwBZ.jpg)
