@@ -3,6 +3,7 @@
 
 ## What is this?
 A simple/cheap hardware + software setup to do wardriving trips and store as much information as we can on a SD card, using a small Arduino box.
+Part of the datalogging code stolen from [Sparkfun](https://learn.sparkfun.com/tutorials/gps-logger-shield-hookup-guide/example-sketch-gps-serial-passthrough) guys
 
 ## What do we need?
 * [$2.98](http://www.ebay.com/itm/222612803340) ESP8266 board (NodeMCU v3 works great)
