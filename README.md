@@ -25,6 +25,7 @@ A simple/cheap hardware + software setup to do wardriving trips and store as muc
 * A better/sorted insertion on CSV files to get rid of duplicate network entries
 * Fix some race conditions
 * A PCB design that I'm working on
+* A better antenna for GPS and WiFi, that will help to speed up satellite lock-up and enlarge WiFi coverage
 
 ## What do you need to configure?
 Nothing, but you can:
