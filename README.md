@@ -26,13 +26,17 @@ A simple/cheap hardware + software setup to do wardriving trips and store as muc
 * Fix some race conditions
 * A PCB design that I'm working on
 
-## What do I need to configure?
+## What do you need to configure?
 Nothing, but you can:
 * Setup CS pin for SD card module on *ARDUINO_USD_CS* variable
 * Change log file prefix and suffix on *LOG_FILE_PREFIX* and *LOG_FILE_SUFFIX*
 * Remove or add columns to CSV datalog on *log_col_names*
 * Define GPS log rate time on *LOG_RATE* (milliseconds)
 * Define GPS TX/RX pins on *ARDUINO_GPS_RX* and *ARDUINO_GPS_TX*
+
+## Electric setup
+Electric setup has nothing special, there is a Fritzing diagram attached as well as a breadboard view of the setup
+![](https://i.imgur.com/B4DcCvU.png)
 
 ## Working examples
 I did a small walking trip around my neighborhood, and put the collected data on a [Google MyMaps](https://www.google.com/maps/d/u/0/viewer?mid=1M18iTRElKQexUaB8HIwEB5qV68c&ll=-34.595372511704866%2C-58.416522499999985&z=18). Note that MyMaps has a limitation of 2000 entries of each CSV (or XML) file. I will try using Open street maps.
