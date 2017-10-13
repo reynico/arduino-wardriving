@@ -89,15 +89,32 @@ void loop() {
     tinyGPS.encode(gpsPort.read());
 }
 
-byte logGPSData() {
-  File logFile = SD.open(logFileName, FILE_WRITE);
+int isOnFile(String mac) {
+  File netFile = SD.open(logFileName);
+  String currentNetwork;
+  if(netFile) {
+    while(netFile.available()) {
+      currentNetwork = netFile.readStringUntil('\n');
+      if (currentNetwork.indexOf(mac) != -1) {
+        SerialMonitor.println("The network was already found");
+        netFile.close();
+        return currentNetwork.indexOf(mac);
+      }
+    }
+    netFile.close();
+    return currentNetwork.indexOf(mac);
+  }
+}
 
-  if (logFile) {
-    int n = WiFi.scanNetworks(); 
-    if (n == 0) {
-      Serial.println("no networks found");
-    } else {
-      for (uint8_t i = 1; i <= n; ++i) {
+byte logGPSData() {
+  int n = WiFi.scanNetworks(); 
+  if (n == 0) {
+    Serial.println("no networks found");
+  } else {
+    for (uint8_t i = 1; i <= n; ++i) {
+      if (isOnFile(WiFi.BSSIDstr(i)) == -1) {
+        File logFile = SD.open(logFileName, FILE_WRITE);
+        SerialMonitor.println("New network found");
         logFile.print(tinyGPS.location.lat(), 6);
         logFile.print(',');
         logFile.print(tinyGPS.location.lng(), 6);
@@ -133,12 +150,10 @@ byte logGPSData() {
         logFile.print(',');
         logFile.print(WiFi.BSSIDstr(i));
         logFile.println();
+        logFile.close();
       }
     }
-    logFile.close();
-    return 1;
   }
-  return 0;
 }
 
 void printHeader() {
