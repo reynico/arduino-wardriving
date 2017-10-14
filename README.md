@@ -23,7 +23,7 @@ Part of the datalogging code stolen from [Sparkfun](https://learn.sparkfun.com/t
 * This doesn't attack any network
 
 ## What does this need?
-* A better/sorted insertion on CSV files to get rid of duplicate network entries
+~~* A better/sorted insertion on CSV files to get rid of duplicate network entries~~ Fixed on d88815b43919bbf54e27a75a84c77be891900372
 * Fix some race conditions
 * A PCB design that I'm working on
 * A better antenna for GPS and WiFi, that will help to speed up satellite lock-up and enlarge WiFi coverage
