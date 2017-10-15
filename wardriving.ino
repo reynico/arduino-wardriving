@@ -28,6 +28,7 @@ TinyGPSPlus tinyGPS;
 #define ARDUINO_GPS_TX 0 // Pin D3
 SoftwareSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX);
 #define gpsPort ssGPS 
+int display = 1;
 
 #define SerialMonitor Serial
 
@@ -59,16 +60,30 @@ void loop() {
   if ((lastLog + LOG_RATE) <= millis()) {
     if (tinyGPS.location.isUpdated()) {
       if (logGPSData()) {
-        SerialMonitor.println("GPS logged.");
-        lcd.setCursor(0, 0);
-        lcd.print("Lat: ");
-        lcd.print(tinyGPS.location.lat(), 6);
+        SerialMonitor.print("GPS logged ");
         SerialMonitor.print(tinyGPS.location.lat(), 6);
         SerialMonitor.print(", ");
         SerialMonitor.println(tinyGPS.location.lng(), 6);
-        lcd.setCursor(0, 1);
-        lcd.print("Lon: ");
-        lcd.print(tinyGPS.location.lng(), 6);
+        SerialMonitor.print("Seen networks: ");
+        SerialMonitor.println(countNetworks());
+        if (display == 1) {
+          lcd.clear();
+          lcd.setCursor(0, 0);
+          lcd.print("Lat: ");
+          lcd.print(tinyGPS.location.lat(), 6);
+          lcd.setCursor(0, 1);
+          lcd.print("Lon: ");
+          lcd.print(tinyGPS.location.lng(), 6);
+          display = 0;
+        } else {
+          lcd.clear();
+          lcd.setCursor(0, 0);
+          lcd.print("Seen: ");
+          lcd.print(countNetworks());
+          lcd.setCursor(0, 1);
+          lcd.print("networks");
+          display = 1;
+        }
         lastLog = millis();
       } else {
         lcd.setCursor(0, 1);
@@ -76,7 +91,7 @@ void loop() {
       }
     } else {
       lcd.setCursor(0, 0);
-      lcd.print("No GPS data.");
+      lcd.print("No GPS data");
       lcd.setCursor(0, 1);
       lcd.print("Sats: ");
       lcd.print(tinyGPS.satellites.value());
@@ -88,7 +103,22 @@ void loop() {
   while (gpsPort.available())
     tinyGPS.encode(gpsPort.read());
 }
-
+int countNetworks() {
+  File netFile = SD.open(logFileName);
+  int networks = 0;
+  if(netFile) {
+    while(netFile.available()) {
+      netFile.readStringUntil('\n');
+      networks++;
+    }
+    netFile.close();
+    if (networks == 0) {
+      return networks;
+    } else {
+      return (networks-1); //Avoid header count
+    }
+  }
+}
 int isOnFile(String mac) {
   File netFile = SD.open(logFileName);
   String currentNetwork;
