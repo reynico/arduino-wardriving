@@ -1,4 +1,5 @@
 
+
 #include <SPI.h>
 #include <SD.h>
 #include <TinyGPS++.h>
@@ -90,6 +91,7 @@ void loop() {
         SerialMonitor.println("Failed to log new GPS data.");
       }
     } else {
+      lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("No GPS data");
       lcd.setCursor(0, 1);
@@ -139,7 +141,7 @@ int isOnFile(String mac) {
 byte logGPSData() {
   int n = WiFi.scanNetworks(); 
   if (n == 0) {
-    Serial.println("no networks found");
+    SerialMonitor.println("no networks found");
   } else {
     for (uint8_t i = 1; i <= n; ++i) {
       if (isOnFile(WiFi.BSSIDstr(i)) == -1) {
