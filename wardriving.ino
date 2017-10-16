@@ -1,5 +1,4 @@
 
-
 #include <SPI.h>
 #include <SD.h>
 #include <TinyGPS++.h>
@@ -18,7 +17,7 @@ char * log_col_names[LOG_COLUMN_COUNT] = {
   "Latitude", "Longitude", "Altitude", "Speed", "Course", "Date", "Time (UTC)", "Satellites", "SSID", "Power", "Channel", "Encryption", "BSSID"
 };
 
-#define LOG_RATE 5000
+#define LOG_RATE 2000
 unsigned long lastLog = 0;
 
 TinyGPSPlus tinyGPS;
@@ -46,6 +45,7 @@ void setup() {
   delay(200);
   lcd.clear();
   if (!SD.begin(ARDUINO_USD_CS)) {
+    lcd.clear();
     lcd.setCursor(0, 1);
     lcd.print("Error initializing SD card.");
     SerialMonitor.println("Error initializing SD card.");
@@ -91,7 +91,6 @@ void loop() {
         SerialMonitor.println("Failed to log new GPS data.");
       }
     } else {
-      lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("No GPS data");
       lcd.setCursor(0, 1);
@@ -144,7 +143,7 @@ byte logGPSData() {
     SerialMonitor.println("no networks found");
   } else {
     for (uint8_t i = 1; i <= n; ++i) {
-      if (isOnFile(WiFi.BSSIDstr(i)) == -1) {
+      if ((isOnFile(WiFi.BSSIDstr(i)) == -1) && (WiFi.channel(i) > 0) && (WiFi.channel(i) < 15)) { //Avoid erroneous channels
         File logFile = SD.open(logFileName, FILE_WRITE);
         SerialMonitor.println("New network found");
         logFile.print(tinyGPS.location.lat(), 6);
