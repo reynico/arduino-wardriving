@@ -24,17 +24,17 @@ TinyGPSPlus tinyGPS;
 #define GPS_BAUD 9600 // GPS module's default baud rate
 
 #include <SoftwareSerial.h>
-#define ARDUINO_GPS_RX 2 // Pin D4
-#define ARDUINO_GPS_TX 0 // Pin D3
-SoftwareSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX);
-#define gpsPort ssGPS 
+#define ARDUINO_GPS_RX 0 // Pin D4
+#define ARDUINO_GPS_TX 2 // Pin D3
+SoftwareSerial ss(ARDUINO_GPS_RX, ARDUINO_GPS_TX);
+//#define ss ssGPS 
 int display = 1;
 
 #define SerialMonitor Serial
 
 void setup() {
   SerialMonitor.begin(115200);
-  gpsPort.begin(GPS_BAUD);
+  ss.begin(GPS_BAUD);
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   lcd.init();
@@ -55,8 +55,8 @@ void setup() {
 }
 
 void loop() {
-//  while (gpsPort.available() > 0)
-//    tinyGPS.encode(gpsPort.read());
+//  while (ss.available() > 0)
+//    tinyGPS.encode(ss.read());
     
   if ((lastLog + LOG_RATE) <= millis()) {
     if (tinyGPS.location.isUpdated()) {
@@ -101,8 +101,8 @@ void loop() {
       delay(100);
     }
   }
-  while (gpsPort.available())
-    tinyGPS.encode(gpsPort.read());
+  while (ss.available())
+    tinyGPS.encode(ss.read());
 }
 int countNetworks() {
   File netFile = SD.open(logFileName);
