@@ -5,12 +5,12 @@
 #include "ESP8266WiFi.h"
 #include <SoftwareSerial.h>
 #include <LiquidCrystal_I2C.h>
- 
+
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 #define ARDUINO_USD_CS 15 // Pin D8
 #define LOG_FILE_PREFIX "gpslog"
 #define MAX_LOG_FILES 100
-#define LOG_FILE_SUFFIX "csv" 
+#define LOG_FILE_SUFFIX "csv"
 char logFileName[13];
 #define LOG_COLUMN_COUNT 11
 const String wigleHeaderFileFormat = "WigleWifi-1.4,appRelease=2.26,model=Feather,release=0.0.0,device=arduinoWardriving,display=3fea5e7,board=esp8266,brand=Adafruit";
@@ -18,7 +18,7 @@ char * log_col_names[LOG_COLUMN_COUNT] = {
   "MAC", "SSID", "AuthMode", "FirstSeen", "Channel", "RSSI", "CurrentLatitude", "CurrentLongitude", "AltitudeMeters", "AccuracyMeters", "Type"
 };
 
-#define LOG_RATE 2000
+#define LOG_RATE 500
 unsigned long lastLog = 0;
 
 static const int RXPin = 0, TXPin = 3;
@@ -50,16 +50,59 @@ void setup() {
   updateFileName();
   printHeader();
 }
-
+void lookForNetworks() {
+    int n = WiFi.scanNetworks();
+  if (n == 0) {
+    SerialMonitor.println("no networks found");
+  } else {
+    for (uint8_t i = 1; i <= n; ++i) {
+      if ((isOnFile(WiFi.BSSIDstr(i)) == -1) && (WiFi.channel(i) > 0) && (WiFi.channel(i) < 15)) { //Avoid erroneous channels
+        File logFile = SD.open(logFileName, FILE_WRITE);
+        SerialMonitor.println("New network found");
+        logFile.print(WiFi.BSSIDstr(i));
+        logFile.print(',');
+        logFile.print(WiFi.SSID(i));
+        logFile.print(',');
+        logFile.print(getEncryption(i));
+        logFile.print(',');
+        logFile.print(tinyGPS.date.year());
+        logFile.print('-');
+        logFile.print(tinyGPS.date.month());
+        logFile.print('-');
+        logFile.print(tinyGPS.date.day());
+        logFile.print(' ');
+        logFile.print(tinyGPS.time.hour());
+        logFile.print(':');
+        logFile.print(tinyGPS.time.minute());
+        logFile.print(':');
+        logFile.print(tinyGPS.time.second());
+        logFile.print(',');
+        logFile.print(WiFi.channel(i));
+        logFile.print(',');
+        logFile.print(WiFi.RSSI(i));
+        logFile.print(',');
+        logFile.print(tinyGPS.location.lat(), 6);
+        logFile.print(',');
+        logFile.print(tinyGPS.location.lng(), 6);
+        logFile.print(',');
+        logFile.print(tinyGPS.altitude.meters(), 1);
+        logFile.print(',');
+        logFile.print((tinyGPS.hdop.value(), 1));
+        logFile.print(',');
+        logFile.print("WIFI");
+        logFile.println();
+        logFile.close();
+      }
+    }
+  }
+}
 void loop() {
   SerialMonitor.print("GPS logged ");
   SerialMonitor.print(tinyGPS.location.lat(), 6);
   SerialMonitor.print(", ");
   SerialMonitor.println(tinyGPS.location.lng(), 6);
-  SerialMonitor.print("Seen networks: ");
-  SerialMonitor.println(countNetworks());
   if (tinyGPS.location.isValid()) {
-    logGPSData();
+    lookForNetworks();
   }
   if (display == 1) {
     lcd.clear();
@@ -79,8 +122,8 @@ void loop() {
     lcd.print("networks");
     display = 1;
   }
-  lastLog = millis();
-  smartDelay(1000);
+  smartDelay(LOG_RATE);
+
   if (millis() > 5000 && tinyGPS.charsProcessed() < 10)
     SerialMonitor.println("No GPS data received: check wiring");
 }
@@ -96,8 +139,8 @@ static void smartDelay(unsigned long ms) {
 int countNetworks() {
   File netFile = SD.open(logFileName);
   int networks = 0;
-  if(netFile) {
-    while(netFile.available()) {
+  if (netFile) {
+    while (netFile.available()) {
       netFile.readStringUntil('\n');
       networks++;
     }
@@ -105,7 +148,7 @@ int countNetworks() {
     if (networks == 0) {
       return networks;
     } else {
-      return (networks-1); //Avoid header count
+      return (networks - 1); //Avoid header count
     }
   }
 }
@@ -113,64 +156,17 @@ int countNetworks() {
 int isOnFile(String mac) {
   File netFile = SD.open(logFileName);
   String currentNetwork;
-  if(netFile) {
-    while(netFile.available()) {
+  if (netFile) {
+    while (netFile.available()) {
       currentNetwork = netFile.readStringUntil('\n');
       if (currentNetwork.indexOf(mac) != -1) {
-  SerialMonitor.println("The network was already found");
-  netFile.close();
-  return currentNetwork.indexOf(mac);
+        SerialMonitor.println("The network was already found");
+        netFile.close();
+        return currentNetwork.indexOf(mac);
       }
     }
     netFile.close();
     return currentNetwork.indexOf(mac);
-  }
-}
-
-byte logGPSData() {
-  int n = WiFi.scanNetworks(); 
-  if (n == 0) {
-    SerialMonitor.println("no networks found");
-  } else {
-    for (uint8_t i = 1; i <= n; ++i) {
-      if ((isOnFile(WiFi.BSSIDstr(i)) == -1) && (WiFi.channel(i) > 0) && (WiFi.channel(i) < 15)) { //Avoid erroneous channels
-  File logFile = SD.open(logFileName, FILE_WRITE);
-  SerialMonitor.println("New network found");
-  logFile.print(WiFi.BSSIDstr(i));
-  logFile.print(',');
-  logFile.print(WiFi.SSID(i));
-  logFile.print(',');
-  logFile.print(getEncryption(i));
-  logFile.print(',');
-  logFile.print(tinyGPS.date.year());
-  logFile.print('-');
-  logFile.print(tinyGPS.date.month());
-  logFile.print('-');
-  logFile.print(tinyGPS.date.day());
-  logFile.print(' ');
-  logFile.print(tinyGPS.time.hour());
-  logFile.print(':');
-  logFile.print(tinyGPS.time.minute());
-  logFile.print(':');
-  logFile.print(tinyGPS.time.second());
-  logFile.print(',');
-  logFile.print(WiFi.channel(i));
-  logFile.print(',');
-  logFile.print(WiFi.RSSI(i));
-  logFile.print(',');
-  logFile.print(tinyGPS.location.lat(), 6);
-  logFile.print(',');
-  logFile.print(tinyGPS.location.lng(), 6);
-  logFile.print(',');
-  logFile.print(tinyGPS.altitude.meters(), 1);
-  logFile.print(',');
-  logFile.print((tinyGPS.hdop.value(), 1));
-  logFile.print(',');
-  logFile.print("WIFI");
-  logFile.println();
-  logFile.close();
-      }
-    }
   }
 }
 
@@ -182,9 +178,9 @@ void printHeader() {
     for (; i < LOG_COLUMN_COUNT; i++) {
       logFile.print(log_col_names[i]);
       if (i < LOG_COLUMN_COUNT - 1)
-  logFile.print(',');
+        logFile.print(',');
       else
-  logFile.println();
+        logFile.println();
     }
     logFile.close();
   }
