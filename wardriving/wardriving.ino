@@ -88,7 +88,7 @@ void lookForNetworks() {
     lcd.setCursor(0,0);
     lcd.println("No networks");
   } else {
-    for (uint8_t i = 1; i <= n; ++i) {
+    for (uint8_t i = 0; i <= n; ++i) {
       if ((isOnFile(WiFi.BSSIDstr(i)) == -1) && (WiFi.channel(i) > 0) && (WiFi.channel(i) < 15)) { //Avoid erroneous channels
         totalNetworks++;
         File logFile = SD.open(logFileName, FILE_WRITE);
